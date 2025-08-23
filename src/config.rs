@@ -3,12 +3,12 @@ use std::net::IpAddr;
 use config::{Config as C, ConfigError, File};
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     pub server: Server,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Server {
     pub ip: IpAddr,
     pub port: u16,

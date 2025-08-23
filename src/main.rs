@@ -7,9 +7,12 @@ use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitEx
 
 use crate::config::load_config;
 use crate::error::Result;
+use crate::state::AppState;
 
 mod config;
 mod error;
+mod routes;
+mod state;
 
 async fn handler() -> Html<&'static str> {
     Html("<h1>Hello world !</h1>")
@@ -25,14 +28,14 @@ async fn main() -> Result<()> {
     let config = load_config()?;
     let docker = Docker::connect_with_socket_defaults()?;
 
-    let app = Router::new()
-        .route("/", get(handler))
-        .with_state(docker.clone());
-
+    // Read ip and port before moving config into state
     let ip = config.server.ip;
     let port = config.server.port;
-    let addr = SocketAddr::new(ip, port);
+    let state = AppState::new(config, docker);
 
+    let app = Router::new().route("/", get(handler)).with_state(state);
+
+    let addr = SocketAddr::new(ip, port);
     let listener = TcpListener::bind(addr).await?;
     let bound = listener.local_addr()?;
 
