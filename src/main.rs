@@ -1,4 +1,3 @@
-use axum::{Router, extract::State, response::Html, routing::get};
 use bollard::Docker;
 use std::net::SocketAddr;
 use tokio::{net::TcpListener, signal::ctrl_c};
@@ -14,15 +13,11 @@ mod error;
 mod routes;
 mod state;
 
-async fn handler() -> Html<&'static str> {
-    Html("<h1>Hello world !</h1>")
-}
-
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
-        .with(EnvFilter::from_default_env())
+        // .with(EnvFilter::from_default_env())
         .init();
 
     let config = load_config()?;
@@ -33,7 +28,7 @@ async fn main() -> Result<()> {
     let port = config.server.port;
     let state = AppState::new(config, docker);
 
-    let app = Router::new().route("/", get(handler)).with_state(state);
+    let app = routes::router().with_state(state);
 
     let addr = SocketAddr::new(ip, port);
     let listener = TcpListener::bind(addr).await?;
