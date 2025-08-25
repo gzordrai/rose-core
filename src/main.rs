@@ -28,7 +28,9 @@ async fn main() -> Result<()> {
     let port = config.server.port;
     let state = AppState::new(config, docker);
 
-    let app = routes::router().with_state(state);
+    let app = routes::router()
+        .with_state(state)
+        .fallback(routes::handler_404);
 
     let addr = SocketAddr::new(ip, port);
     let listener = TcpListener::bind(addr).await?;
