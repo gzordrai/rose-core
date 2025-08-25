@@ -4,7 +4,7 @@ use axum::{Json, Router, extract::State, http::StatusCode, routing::get};
 use serde::Serialize;
 use tokio::time::timeout;
 
-use crate::state::AppState;
+use crate::{routes::JsonResponse, state::AppState};
 
 const HEALTH_TIMEOUT: Duration = Duration::from_secs(1);
 
@@ -22,7 +22,7 @@ struct HealthResponse {
     uptime_seconds: u64,
 }
 
-async fn health(State(state): State<AppState>) -> (StatusCode, Json<HealthResponse>) {
+async fn health(State(state): State<AppState>) -> JsonResponse<HealthResponse> {
     let status = match timeout(HEALTH_TIMEOUT, state.docker.ping()).await {
         Ok(Ok(_)) => Status::Ok,
         _ => Status::Down,
@@ -34,7 +34,7 @@ async fn health(State(state): State<AppState>) -> (StatusCode, Json<HealthRespon
     };
 
     let resp = HealthResponse {
-        status: status,
+        status,
         version: env!("CARGO_PKG_VERSION").into(),
         uptime_seconds: state.start_time.elapsed().as_secs(),
     };

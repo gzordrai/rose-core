@@ -1,6 +1,9 @@
-use axum::Router;
+use axum::{Json, Router, http::StatusCode};
 
 use crate::state::AppState;
+
+pub type Response<T> = (StatusCode, T);
+pub type JsonResponse<T> = Response<Json<T>>;
 
 pub mod health;
 
