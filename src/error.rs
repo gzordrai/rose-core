@@ -51,3 +51,40 @@ impl IntoResponse for RoseError {
         (status, Json(ErrorBody { error: msg.into() })).into_response()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::http::StatusCode;
+    use axum::response::IntoResponse;
+    use std::io::Error;
+
+    #[test]
+    fn test_io_error_response() {
+        let io_err = RoseError::Io(Error::other("io error"));
+        let response = io_err.into_response();
+        let status = response.status();
+
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    #[test]
+    fn test_config_error_response() {
+        let config_err = RoseError::Config(ConfigError::Frozen);
+        let response = config_err.into_response();
+        let status = response.status();
+
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    #[test]
+    fn test_docker_error_response() {
+        let docker_err = RoseError::Docker(DockerError::IOError {
+            err: Error::other("docker fail"),
+        });
+        let response = docker_err.into_response();
+        let status = response.status();
+
+        assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+    }
+}
