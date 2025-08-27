@@ -5,10 +5,13 @@ use crate::state::AppState;
 pub type Response<T> = (StatusCode, T);
 pub type JsonResponse<T> = Response<Json<T>>;
 
+pub mod container;
 pub mod health;
 
 pub fn router() -> Router<AppState> {
-    Router::new().nest("/health", health::router())
+    Router::new()
+        .nest("/health", health::router())
+        .nest("/containers", container::router())
 }
 
 pub async fn handler_404() -> impl IntoResponse {
